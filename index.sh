@@ -13,7 +13,6 @@ if [ ! -f ./ldap.vars ]; then
 fi
 
 source ldap.vars
-
 export current_host=`hostname`
 
 # Configure the options for the LDAP packages based on debian or ubuntu
