@@ -1,27 +1,20 @@
 #!/bin/bash
 
-
 # Stop this script on any error.
 set -e
-
 
 # Pull in the mustache template library for bash
 source lib/mo
 
+if [ ! -f ./ldap.vars ]; then
+    echo "ldap.vars file not found!"
+    echo "Please copy ldap.vars.template to ldap.vars and edit it."
+    exit 1
+fi
 
-# Set some variables for the test of the file
-## TODO! Dont hard code these values.
-export ldap_host="192.168.1.55"
-export ldap_base_dn="dc=theta42,dc=com"
-
-export ldap_admin_dn="cn=admin,dc=theta42,dc=com"
-export ldap_admin_password=$1
-
-export ldap_bind_dn="cn=ldapclient service,ou=people,dc=theta42,dc=com"
-export ldap_bind_password=$2
+source ldap.vars
 
 export current_host=`hostname`
-
 
 # Configure the options for the LDAP packages based on debian or ubuntu
 if grep -qiE "^NAME=\"debian" /etc/os-release; then
@@ -90,11 +83,17 @@ systemctl enable nscd
 
 # Apply LDAP group filter for PAM LDAP login
 # Different distros/versions read the filter from different places.
-PAM_LDAP_filter="pam_filter &(|(memberof=cn=host_access,ou=groups,dc=theta42,dc=com)(memberof=cn=host_`hostname`_access,ou=groups,dc=theta42,dc=com))"
+PAM_LDAP_filter="
+pam_password_prohibit_message Please visit $sso_url to change your password.
+nss_base_group          ou=Groups,$ldap_base_dn?one
+nss_schema rfc2307
+pam_filter &(|(memberof=cn=host_access,ou=Groups,$ldap_bind_dn)(memberof=cn=host_`hostname`_access,ou=Groups,$ldap_bind_dn))
+"
 
 if grep -qiE "^NAME=\"debian" /etc/os-release; then
 	echo "$PAM_LDAP_filter" >> /etc/pam_ldap.conf
 fi
+
 echo "$PAM_LDAP_filter" >> /etc/ldap/ldap.conf
 echo "$PAM_LDAP_filter" >> /etc/ldap.conf
 
@@ -115,3 +114,16 @@ echo "AuthorizedKeysCommand /usr/local/bin/ldap-ssh-key" >> /etc/ssh/sshd_config
 echo "AuthorizedKeysCommandUser nobody" >> /etc/ssh/sshd_config
 
 service ssh restart
+
+if [ -z "$sso_token" ]; then
+
+	curl '$sso_url/api/group/' \
+	  -H 'auth-token: $sso_token' \
+	  -H 'content-type: application/json; charset=UTF-8' \
+	  --data-binary "{\"name\":\"host_$hostname_access\",\"description\":\"Access for $hostname\"}"
+
+	curl '$sso_url/api/group/' \
+	  -H 'auth-token: $sso_token' \
+	  -H 'content-type: application/json; charset=UTF-8' \
+	  --data-binary "{\"name\":\"host_$hostname_admin\",\"description\":\"sudo for $hostname\"}"
+fi

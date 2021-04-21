@@ -1,0 +1,12 @@
+# Set some variables for the test of the file
+export ldap_host="192.168.1.55"
+export ldap_base_dn="dc=theta42,dc=com"
+
+export ldap_admin_dn="cn=admin,$ldap_base_dn"
+export ldap_admin_password=""
+
+export ldap_bind_dn="cn=ldapclient service,ou=People,$ldap_base_dn"
+export ldap_bind_password=""
+
+export sso_url="https://sso-dev.theta42.com"
+export sso_token="uuid_thingy" # This is the only optional variable
