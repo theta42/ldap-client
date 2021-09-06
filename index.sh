@@ -86,7 +86,7 @@ PAM_LDAP_filter="
 pam_password_prohibit_message Please visit $sso_url to change your password.
 nss_base_group          ou=Groups,$ldap_base_dn?one
 nss_schema rfc2307
-pam_filter &(|(memberof=cn=host_access,ou=Groups,$ldap_bind_dn)(memberof=cn=host_`hostname`_access,ou=Groups,$ldap_bind_dn))
+pam_filter &(|(memberof=cn=host_access,ou=Groups,$ldap_base_dn)(memberof=cn=host_`hostname`_access,ou=Groups,$ldap_base_dn))
 "
 
 if grep -qiE "^NAME=\"debian" /etc/os-release; then
