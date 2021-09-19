@@ -2,5 +2,12 @@
 
 ## Usage
 
-* CLone this repo to the server you wish to perform LDAP logins on.
-* Move into the root of the repo and execute ` ./install <ldap admin password> <ldap bind password>`
+Move into the repo root
+
+Copy the file ldap.vars.template to ldap.vars
+
+Edit ldap.vars to your liking
+
+Execute ./index.sh
+
+The sso server will be on http://<IP>:3000
