@@ -9,5 +9,3 @@ Copy the file ldap.vars.template to ldap.vars
 Edit ldap.vars to your liking
 
 Execute ./index.sh
-
-The sso server will be on http://<IP>:3000
