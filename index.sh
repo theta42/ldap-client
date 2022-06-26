@@ -114,15 +114,15 @@ echo "AuthorizedKeysCommandUser nobody" >> /etc/ssh/sshd_config
 
 service ssh restart
 
-if [ -z "$sso_token" ]; then
+if [[ -v sso_token ]]; then
+        echo "found token"
+        curl "${sso_url}/api/group/" \
+          -H "auth-token: ${sso_token}" \
+          -H "content-type: application/json; charset=UTF-8" \
+          --data-binary "{\"name\":\"host_${current_host}_access\",\"description\":\"Access for $hostname\"}"
 
-	curl '$sso_url/api/group/' \
-	  -H 'auth-token: $sso_token' \
-	  -H 'content-type: application/json; charset=UTF-8' \
-	  --data-binary "{\"name\":\"host_${hostname}_access\",\"description\":\"Access for $hostname\"}"
-
-	curl '$sso_url/api/group/' \
-	  -H 'auth-token: $sso_token' \
-	  -H 'content-type: application/json; charset=UTF-8' \
-	  --data-binary "{\"name\":\"host_${hostname}_admin\",\"description\":\"sudo for $hostname\"}"
+        curl "${sso_url}/api/group/" \
+          -H "auth-token: ${sso_token}" \
+          -H "content-type: application/json; charset=UTF-8" \
+          --data-binary "{\"name\":\"host_${current_host}_admin\",\"description\":\"sudo for $hostname\"}"
 fi
