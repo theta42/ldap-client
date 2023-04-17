@@ -119,10 +119,10 @@ if [[ -v sso_token ]]; then
         curl "${sso_url}/api/group/" \
           -H "auth-token: ${sso_token}" \
           -H "content-type: application/json; charset=UTF-8" \
-          --data-binary "{\"name\":\"host_${current_host}_access\",\"description\":\"Access for $hostname\"}"
+          --data-binary "{\"name\":\"host_${current_host}_access\",\"description\":\"Access for $current_host\"}"
 
         curl "${sso_url}/api/group/" \
           -H "auth-token: ${sso_token}" \
           -H "content-type: application/json; charset=UTF-8" \
-          --data-binary "{\"name\":\"host_${current_host}_admin\",\"description\":\"sudo for $hostname\"}"
+          --data-binary "{\"name\":\"host_${current_host}_admin\",\"description\":\"sudo for $current_host\"}"
 fi
