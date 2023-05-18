@@ -55,7 +55,7 @@ fi
 
 
 # Install the requires packages for LDAP PAM telling apt to ignore any interactive options
-DEBIAN_FRONTEND=noninteractive apt install -y libnss-ldap libpam-ldap ldap-utils nscd
+DEBIAN_FRONTEND=noninteractive apt install -y libnss-ldap libpam-ldap ldap-utils nscd curl
 
 
 # Configure the system to use LDAP for PAM. Some versions include `auth-client-config` and others dont.
