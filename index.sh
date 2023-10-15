@@ -15,6 +15,12 @@ fi
 source ldap.vars
 export current_host=`hostname`
 
+
+echo "nslcd nslcd/ldap-base string $ldap_base_dn" | debconf-set-selections
+echo "nslcd nslcd/ldap-uris string ldap://$ldap_host" | debconf-set-selections
+echo "libnss-ldapd/ libnss-ldapd/nsswitch multiselect passwd, group" | debconf-set-selections
+
+
 # Configure the options for the LDAP packages based on debian or ubuntu
 if grep -qiE "^NAME=\"debian" /etc/os-release; then
 
@@ -39,6 +45,8 @@ if grep -qiE "^NAME=\"debian" /etc/os-release; then
 	echo "libpam-ldap libpam-ldap/dbrootlogin boolean true" | debconf-set-selections
 
 else
+	# Debian
+
 	echo "ldap-auth-config ldap-auth-config/ldapns/ldap-server string ldap://$ldap_host" | debconf-set-selections
 	echo "ldap-auth-config ldap-auth-config/bindpw string $ldap_bind_password" | debconf-set-selections
 	echo "ldap-auth-config ldap-auth-config/rootbindpw string $ldap_admin_password" | debconf-set-selections
