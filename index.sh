@@ -24,41 +24,41 @@ echo "libnss-ldapd/ libnss-ldapd/nsswitch multiselect passwd, group" | debconf-s
 # Configure the options for the LDAP packages based on debian or ubuntu
 if grep -qiE "^NAME=\"debian" /etc/os-release; then
 
-	echo "libnss-ldap libnss-ldap/rootbindpw string $ldap_admin_password" | debconf-set-selections
-	echo "libnss-ldap libnss-ldap/bindpw string $ldap_bind_password" | debconf-set-selections
-	echo "libnss-ldap libnss-ldap/dbrootlogin boolean true" | debconf-set-selections
-	echo "libnss-ldap libnss-ldap/binddn string $ldap_bind_dn" | debconf-set-selections
-	echo "libnss-ldap libnss-ldap/confperm boolean false" | debconf-set-selections
-	echo "libnss-ldap libnss-ldap/rootbinddn string $ldap_admin_dn" | debconf-set-selections
-	echo "libnss-ldap libnss-ldap/dblogin boolean false" | debconf-set-selections
-	echo "libnss-ldap libnss-ldap/override boolean true" | debconf-set-selections
-	echo "shared shared/ldapns/ldap-server string ldap://$ldap_host" | debconf-set-selections
-	echo "shared shared/ldapns/base-dn string $ldap_base_dn" | debconf-set-selections
-	echo "shared shared/ldapns/ldap_version string 3" | debconf-set-selections
-	echo "libpam-ldap libpam-ldap/bindpw string $ldap_bind_password" | debconf-set-selections
-	echo "libpam-ldap libpam-ldap/rootbindpw string $ldap_admin_password" | debconf-set-selections
-	echo "libpam-ldap libpam-ldap/dblogin boolean true" | debconf-set-selections
-	echo "libpam-ldap libpam-ldap/pam_password string crypt" | debconf-set-selections
-	echo "libpam-ldap libpam-ldap/rootbinddn string $ldap_admin_dn" | debconf-set-selections
-	echo "libpam-ldap libpam-ldap/override boolean true" | debconf-set-selections
-	echo "libpam-ldap libpam-ldap/binddn string $ldap_bind_dn" | debconf-set-selections
-	echo "libpam-ldap libpam-ldap/dbrootlogin boolean true" | debconf-set-selections
+        echo "libnss-ldap libnss-ldap/rootbindpw string $ldap_admin_password" | debconf-set-selections
+        echo "libnss-ldap libnss-ldap/bindpw string $ldap_bind_password" | debconf-set-selections
+        echo "libnss-ldap libnss-ldap/dbrootlogin boolean true" | debconf-set-selections
+        echo "libnss-ldap libnss-ldap/binddn string $ldap_bind_dn" | debconf-set-selections
+        echo "libnss-ldap libnss-ldap/confperm boolean false" | debconf-set-selections
+        echo "libnss-ldap libnss-ldap/rootbinddn string $ldap_admin_dn" | debconf-set-selections
+        echo "libnss-ldap libnss-ldap/dblogin boolean false" | debconf-set-selections
+        echo "libnss-ldap libnss-ldap/override boolean true" | debconf-set-selections
+        echo "shared shared/ldapns/ldap-server string ldap://$ldap_host" | debconf-set-selections
+        echo "shared shared/ldapns/base-dn string $ldap_base_dn" | debconf-set-selections
+        echo "shared shared/ldapns/ldap_version string 3" | debconf-set-selections
+        echo "libpam-ldap libpam-ldap/bindpw string $ldap_bind_password" | debconf-set-selections
+        echo "libpam-ldap libpam-ldap/rootbindpw string $ldap_admin_password" | debconf-set-selections
+        echo "libpam-ldap libpam-ldap/dblogin boolean true" | debconf-set-selections
+        echo "libpam-ldap libpam-ldap/pam_password string crypt" | debconf-set-selections
+        echo "libpam-ldap libpam-ldap/rootbinddn string $ldap_admin_dn" | debconf-set-selections
+        echo "libpam-ldap libpam-ldap/override boolean true" | debconf-set-selections
+        echo "libpam-ldap libpam-ldap/binddn string $ldap_bind_dn" | debconf-set-selections
+        echo "libpam-ldap libpam-ldap/dbrootlogin boolean true" | debconf-set-selections
 
 else
-	# Debian
+        # Debian
 
-	echo "ldap-auth-config ldap-auth-config/ldapns/ldap-server string ldap://$ldap_host" | debconf-set-selections
-	echo "ldap-auth-config ldap-auth-config/bindpw string $ldap_bind_password" | debconf-set-selections
-	echo "ldap-auth-config ldap-auth-config/rootbindpw string $ldap_admin_password" | debconf-set-selections
-	echo "ldap-auth-config ldap-auth-config/dbrootlogin boolean true" | debconf-set-selections
-	echo "ldap-auth-config ldap-auth-config/dblogin boolean true" | debconf-set-selections
-	echo "ldap-auth-config ldap-auth-config/ldapns/ldap_version string 3" | debconf-set-selections
-	echo "ldap-auth-config ldap-auth-config/pam_password string md5" | debconf-set-selections
-	echo "ldap-auth-config ldap-auth-config/ldapns/base-dn string $ldap_base_dn" | debconf-set-selections
-	echo "ldap-auth-config ldap-auth-config/move-to-debconf boolean true" | debconf-set-selections
-	echo "ldap-auth-config ldap-auth-config/rootbinddn string $ldap_admin_dn" | debconf-set-selections
-	echo "ldap-auth-config ldap-auth-config/binddn string $ldap_bind_dn" | debconf-set-selections
-	echo "ldap-auth-config ldap-auth-config/override boolean true" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/ldapns/ldap-server string ldap://$ldap_host" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/bindpw string $ldap_bind_password" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/rootbindpw string $ldap_admin_password" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/dbrootlogin boolean true" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/dblogin boolean true" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/ldapns/ldap_version string 3" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/pam_password string md5" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/ldapns/base-dn string $ldap_base_dn" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/move-to-debconf boolean true" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/rootbinddn string $ldap_admin_dn" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/binddn string $ldap_bind_dn" | debconf-set-selections
+        echo "ldap-auth-config ldap-auth-config/override boolean true" | debconf-set-selections
 fi
 
 
@@ -69,11 +69,11 @@ DEBIAN_FRONTEND=noninteractive apt install -y libnss-ldap libpam-ldap ldap-utils
 # Configure the system to use LDAP for PAM. Some versions include `auth-client-config` and others dont.
 # `auth-client-config` requires python2.x, so support for it is dropping.
 if which auth-client-config >/dev/null; then
-	auth-client-config -t nss -p lac_ldap
+        auth-client-config -t nss -p lac_ldap
 else
-	sed -i '/passwd/ s/$/ ldap/' /etc/nsswitch.conf
-	sed -i '/group/ s/$/ ldap/' /etc/nsswitch.conf
-	sed -e s/use_authtok//g -i /etc/pam.d/common-password
+        sed -i '/passwd/ s/$/ ldap/' /etc/nsswitch.conf
+        sed -i '/group/ s/$/ ldap/' /etc/nsswitch.conf
+        sed -e s/use_authtok//g -i /etc/pam.d/common-password
 fi
 pam-auth-update --enable ldap
 
@@ -98,12 +98,15 @@ pam_filter &(|(memberof=cn=host_access,ou=Groups,$ldap_base_dn)(memberof=cn=host
 "
 
 if grep -qiE "^NAME=\"debian" /etc/os-release; then
-	echo "$PAM_LDAP_filter" >> /etc/pam_ldap.conf
+        touch /etc/pam_ldap.conf
+        echo "$PAM_LDAP_filter" >> /etc/pam_ldap.conf
 fi
 
-echo "$PAM_LDAP_filter" >> /etc/ldap/ldap.conf
-echo "$PAM_LDAP_filter" >> /etc/ldap.conf
+if [ -d /etc/ldap/ ]; then
+        echo "$PAM_LDAP_filter" >> /etc/ldap/ldap.conf
+fi
 
+echo "$PAM_LDAP_filter" >> /etc/ldap.conf
 
 ## Set up sudo-ldap
 export SUDO_FORCE_REMOVE=yes
