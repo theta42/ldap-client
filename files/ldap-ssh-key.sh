@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ldapsearch -H "{{ldap_host}}" \
+ldapsearch -H "ldap://{{ldap_host}}" \
   -D "{{ldap_bind_dn}}" \
   -w "{{ldap_bind_password}}" \
   -b "ou=People,{{ldap_base_dn}}" \
