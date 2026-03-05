@@ -13,7 +13,7 @@ export current_host=$(hostname)
 # Install SSSD and required tools
 # We use sssd-ldap for the backend and libnss-sss/libpam-sss for the system hooks
 DEBIAN_FRONTEND=noninteractive apt update
-DEBIAN_FRONTEND=noninteractive apt install -y sssd sssd-ldap libnss-sss libpam-sss ldap-utils libsss-sudo curl libsasl2-modules-gssapi-mit
+DEBIAN_FRONTEND=noninteractive apt install -y sudo sssd sssd-ldap libnss-sss libpam-sss ldap-utils libsss-sudo curl libsasl2-modules-gssapi-mit
 
 # Create the SSSD configuration from template
 mkdir -p /etc/sssd
@@ -52,5 +52,17 @@ systemctl enable --now sssd-sudo.socket
 # --- SSO Group Creation API Calls ---
 if [[ -v sso_token ]]; then
     echo "Registering host groups via API..."
-    # (Existing curl logic remains here)
+    echo "found token"
+    curl "${sso_url}/api/group/" \
+      -H "auth-token: ${sso_token}" \
+      -H "content-type: application/json; charset=UTF-8" \
+      --data-binary "{\"name\":\"host_${current_host}_access\",\"description\":\"Access for $current_host\"}"
+
+    curl "${sso_url}/api/group/" \
+      -H "auth-token: ${sso_token}" \
+      -H "content-type: application/json; charset=UTF-8" \
+      --data-binary "{\"name\":\"host_${current_host}_admin\",\"description\":\"sudo for $current_host\"}"
 fi
+
+echo "--- SSSD Migration Complete! ---"
+echo "Please verify authentication and user access."
