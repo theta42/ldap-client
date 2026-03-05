@@ -13,7 +13,7 @@ export current_host=$(hostname)
 # Install SSSD and required tools
 # We use sssd-ldap for the backend and libnss-sss/libpam-sss for the system hooks
 DEBIAN_FRONTEND=noninteractive apt update
-DEBIAN_FRONTEND=noninteractive apt install -y sssd sssd-ldap libnss-sss libpam-sss ldap-utils curl libsasl2-modules-gssapi-mit
+DEBIAN_FRONTEND=noninteractive apt install -y sssd sssd-ldap libnss-sss libpam-sss ldap-utils libsss-sudo curl libsasl2-modules-gssapi-mit
 
 # Create the SSSD configuration from template
 mkdir -p /etc/sssd
@@ -46,6 +46,8 @@ if ! grep -q "AuthorizedKeysCommand /usr/local/bin/ldap-ssh-key" /etc/ssh/sshd_c
     echo "AuthorizedKeysCommandUser nobody" >> /etc/ssh/sshd_config
     systemctl restart ssh
 fi
+
+systemctl enable --now sssd-sudo.socket
 
 # --- SSO Group Creation API Calls ---
 if [[ -v sso_token ]]; then
