@@ -2,9 +2,6 @@
 export ldap_host="10.1.0.55"
 export ldap_base_dn="dc=theta42,dc=com"
 
-export ldap_admin_dn="cn=admin,$ldap_base_dn"
-export ldap_admin_password=""
-
 export ldap_bind_dn="cn=ldapclient service,ou=People,$ldap_base_dn"
 export ldap_bind_password=""
 
