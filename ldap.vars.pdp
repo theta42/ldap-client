@@ -8,7 +8,7 @@ export ldap_bind_password=""
 export sso_url="https://sso.theta42.com"
 export sso_token="" # This is the only optional variable
 
-export ldap_location=""
+export ldap_location="pdp"
 
 ldap_access_groups=( "${ldap_location}_access" "${ldap_location}_$(hostname)_access" )
 ldap_sudo_groups=( "${ldap_location}_admin" "${ldap_location}_$(hostname)_admin" )
