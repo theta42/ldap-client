@@ -1,14 +1,20 @@
-# Set some variables for the test of the file
-export ldap_host="ldap.internal.theta42.com"
-export ldap_base_dn="dc=theta42,dc=com"
+# Copy this file to ldap.vars and fill in your environment (ldap.vars is
+# gitignored -- it holds a real bind password).
+export ldap_host="ldap.internal.example.com"
+export ldap_base_dn="dc=example,dc=com"
 
-export ldap_bind_dn="cn=ldapclient service,ou=People,$ldap_base_dn"
+export ldap_bind_dn="cn=ldapclient,ou=People,$ldap_base_dn"
 export ldap_bind_password=""
 
-export sso_url="https://sso.theta42.com"
+export sso_url="https://sso.example.com"
 export sso_token="" # This is the only optional variable
 
 export ldap_location=""
 
-ldap_access_groups=( "${ldap_location}_access" "${ldap_location}_$(hostname)_access" )
-ldap_sudo_groups=( "${ldap_location}_admin" "${ldap_location}_$(hostname)_admin" )
+# Used by files/ldap-ssh-key.sh to decide which users get their SSH key
+# served. Must match the naming convention files/sssd.conf.mo's
+# ldap_access_filter and the SSO Manager API registration in index.sh both
+# use: <location>_access / <location>_host_<hostname>_access. Sudo access
+# (the _admin equivalent) is enforced entirely by sssd.conf.mo's
+# ldap_sudo_search_filter -- there's no separate array for it.
+ldap_access_groups=( "${ldap_location}_access" "${ldap_location}_host_$(hostname)_access" )

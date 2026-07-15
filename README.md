@@ -44,19 +44,21 @@ Edit `ldap.vars` with your environment settings:
 
 ```bash
 # LDAP server settings
-export ldap_host="ldap.internal.theta42.com"
-export ldap_base_dn="dc=theta42,dc=com"
+export ldap_host="ldap.internal.example.com"
+export ldap_base_dn="dc=example,dc=com"
 
-# Service account for LDAP binds
-export ldap_bind_dn="cn=ldapclient service,ou=People,$ldap_base_dn"
+# Service account for LDAP binds (a plain user, not the admin DN --
+# see sso-manager-node's docs/ldap.md "Direct-bind service accounts")
+export ldap_bind_dn="cn=ldapclient,ou=People,$ldap_base_dn"
 export ldap_bind_password="your-service-account-password"
 
 # SSO Manager integration (optional)
-export sso_url="https://sso.theta42.com"
+export sso_url="https://sso.example.com"
 export sso_token="your-api-token"
 
-# Location identifier for group naming (optional)
-export ldap_location="718it"
+# Location identifier for group naming (optional) -- e.g. a site or
+# datacenter name if you run this against more than one location
+export ldap_location="mylocation"
 ```
 
 #### Variable descriptions
@@ -69,24 +71,30 @@ export ldap_location="718it"
 | `ldap_bind_password` | Yes | Password for the service account |
 | `sso_url` | No | Base URL of the SSO Manager API |
 | `sso_token` | No | API authentication token for SSO Manager |
-| `ldap_location` | No | Location prefix for group names (e.g., `718it`). If omitted, group-based access control will not be configured |
+| `ldap_location` | No | Location prefix for group names (e.g., `nyc`, `dc1`) if you run this against more than one site. If omitted, the group names fall back to unprefixed `_access`/`_admin` (see *Group naming* below) |
 
-#### Group configuration
+#### Group naming
 
-The script uses two arrays to define which LDAP groups grant access:
+Login access and sudo are both group-based, using one consistent naming
+scheme across `files/sssd.conf.mo` (the actual enforcement — SSSD's
+`ldap_access_filter` / `ldap_sudo_search_filter`), `files/ldap-ssh-key.sh`
+(which SSH keys get served), and the groups `index.sh` auto-creates via the
+SSO Manager API:
 
-```bash
-ldap_access_groups=( "${ldap_location}_access" "${ldap_location}_$(hostname)_access" )
-ldap_sudo_groups=( "${ldap_location}_admin" "${ldap_location}_$(hostname)_admin" )
-```
+- `<location>_access` — grants login access to **all** hosts in this location
+- `<location>_host_<hostname>_access` — grants login access only to `<hostname>`
+- `<location>_admin` — grants sudo on **all** hosts in this location
+- `<location>_host_<hostname>_admin` — grants sudo only on `<hostname>`
 
-This creates both location-wide and host-specific groups:
-- `718it_access` - grants login access to all hosts in this location
-- `718it_host_webserver01_access` - grants login access only to webserver01
-- `718it_admin` - grants sudo privileges on all hosts
-- `718it_host_webserver01_admin` - grants sudo privileges only on webserver01
+e.g. with `ldap_location="mylocation"` on a host named `webserver01`:
+`mylocation_access`, `mylocation_host_webserver01_access`, `mylocation_admin`,
+`mylocation_host_webserver01_admin`.
 
-If `ldap_location` is not set, these arrays will be empty and access control will be handled entirely by LDAP-side configuration.
+`ldap_access_groups` in `ldap.vars` (used only by `ldap-ssh-key.sh`, to decide
+who gets an SSH key served) must use this same scheme — the template already
+does. If `ldap_location` is left empty, the filters fall back to `_access` /
+`_host_<hostname>_access` / etc. (no location prefix) — set `ldap_location`
+for anything beyond a single-location setup.
 
 ### 4. Run the installation script
 
@@ -150,11 +158,10 @@ su - <ldap-username>
 ldap-client/
   index.sh              # Main installation script
   ldap.vars.template    # Configuration template (copy to ldap.vars)
-  ldap.vars.theta42     # Example configuration for theta42
   files/
-    sssd.conf.mo        # SSSD configuration template (Mustache)
+    sssd.conf.mo        # SSSD configuration template (Mustache) -- also
+                         # configures SSSD's native LDAP sudo provider
     ldap-ssh-key.sh     # SSH AuthorizedKeysCommand script
-    sudo-ldap.conf      # LDAP sudo configuration template
   lib/
     mo                  # Mustache template processor
 ```
@@ -253,8 +260,10 @@ journalctl -u sssd -f
 
 ## Related projects
 
-- [theta42/sso-manager-node](https://github.com/theta42/sso-manager-node) - Centralized SSO and LDAP management
+- [theta42/sso-manager-node](https://github.com/theta42/sso-manager-node) — Centralized SSO and LDAP management. See its
+  [Connecting a 3rd-party app or container](https://theta42.github.io/sso-manager-node/ldap.html#connecting-a-3rd-party-app-or-container)
+  docs if you just need one application to bind LDAP, rather than full host login/SSH/sudo.
 
 ## License
 
-This project is provided as-is for internal use.
+MIT License — see [LICENSE](LICENSE).
