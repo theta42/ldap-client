@@ -49,19 +49,33 @@ fi
 
 systemctl enable --now sssd-sudo.socket
 
-# --- SSO Group Creation API Calls ---
 if [[ -v sso_token ]]; then
-    echo "Registering host groups via API..."
-    echo "found token"
-    curl "${sso_url}/api/group/" \
-      -H "auth-token: ${sso_token}" \
-      -H "content-type: application/json; charset=UTF-8" \
-      --data-binary "{\"name\":\"${ldap_location}_host_${current_host}_access\",\"description\":\"Access for $current_host\"}"
+    echo "Registering host in Directory Graph via API..."
+    
+    # Collect Host Information
+    host_ip=$(hostname -I | awk '{print $1}')
+    
+    # Get MAC address of the default route interface
+    default_iface=$(ip route show default | awk '/default/ {print $5}')
+    host_mac=""
+    if [[ -n "$default_iface" ]]; then
+        host_mac=$(cat "/sys/class/net/$default_iface/address" 2>/dev/null || echo "")
+    fi
+    
+    # Get OS and Kernel details (stripping quotes to be JSON safe)
+    os_name=$(source /etc/os-release && echo "$PRETTY_NAME" | sed 's/"//g')
+    kernel_ver=$(uname -r)
+    
+    parent_field=""
+    if [[ -n "$ldap_location" ]]; then
+        parent_field="\"parentSlug\":\"site_${ldap_location}\","
+    fi
 
-    curl "${sso_url}/api/group/" \
-      -H "auth-token: ${sso_token}" \
+    # Post to Directory API with metadata payload
+    curl -sS "${sso_url}/api/directory-admin/resources" \
+      -H "Authorization: Bearer ${sso_token}" \
       -H "content-type: application/json; charset=UTF-8" \
-      --data-binary "{\"name\":\"${ldap_location}_host_${current_host}_admin\",\"description\":\"sudo for $current_host\"}"
+      --data-binary "{\"name\":\"${current_host}\",\"slug\":\"host_${current_host}\",\"kind\":\"host\",${parent_field}\"description\":\"Auto-registered Linux host\",\"metadata\":{\"ip\":\"${host_ip}\",\"macAddress\":\"${host_mac}\",\"os\":\"${os_name}\",\"kernel\":\"${kernel_ver}\",\"subType\":\"linux\"}}"
 fi
 
 echo "--- SSSD Migration Complete! ---"
