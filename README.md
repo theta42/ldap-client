@@ -11,7 +11,7 @@ This script automates the configuration of SSSD (System Security Services Daemon
 - Sudo privileges via LDAP groups
 - SSH public key retrieval from LDAP for key-based authentication
 - Automatic home directory creation for LDAP users
-- Optional registration of host-specific groups via the SSO Manager API
+- Optional automatic registration of the host into the SSO Manager Directory Graph API
 
 ## Prerequisites
 
