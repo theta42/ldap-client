@@ -85,16 +85,20 @@ SSO Manager API:
 - `<location>_host_<hostname>_access` — grants login access only to `<hostname>`
 - `<location>_admin` — grants sudo on **all** hosts in this location
 - `<location>_host_<hostname>_admin` — grants sudo only on `<hostname>`
+- `app_super_admin` — the cross-app super admin group (also admin in the SSO
+  manager/proxy/jump-host web UIs) grants login access to **every** host,
+  regardless of location or per-host groups. Sudo is not yet extended to
+  super admins (see the sudo caveat below).
 
 e.g. with `ldap_location="mylocation"` on a host named `webserver01`:
 `mylocation_access`, `mylocation_host_webserver01_access`, `mylocation_admin`,
 `mylocation_host_webserver01_admin`.
 
 `ldap_access_groups` in `ldap.vars` (used only by `ldap-ssh-key.sh`, to decide
-who gets an SSH key served) must use this same scheme — the template already
-does. If `ldap_location` is left empty, the filters fall back to `_access` /
-`_host_<hostname>_access` / etc. (no location prefix) — set `ldap_location`
-for anything beyond a single-location setup.
+who gets an SSH key served) must use this same scheme plus `app_super_admin`
+— the template already does. If `ldap_location` is left empty, the filters
+fall back to `_access` / `_host_<hostname>_access` / etc. (no location
+prefix) — set `ldap_location` for anything beyond a single-location setup.
 
 ### 4. Run the installation script
 
@@ -188,6 +192,15 @@ SSSD is configured with an LDAP sudo provider that:
 - Searches for sudo rules in the LDAP directory
 - Filters rules based on group membership
 - Refreshes rules every 15 minutes (full) or 5 minutes (smart)
+
+**Caveat:** `ldap_sudo_search_filter` (the group-scoping half of this) is
+commented out in `files/sssd.conf.mo` — SSSD 2.6.3's ini validator rejects it
+as an unknown option on this version, so sudo rule filtering by
+`<location>_admin`/`<location>_host_<hostname>_admin` group membership isn't
+actually enforced yet (native LDAP `sudoRole` entries are the likely fix,
+tracked as separate follow-up work). `app_super_admin` is **not** extended
+to sudo for the same reason — only the login (`ldap_access_filter`) side is
+wired up so far.
 
 ### SSO Manager integration
 

@@ -14,7 +14,9 @@ export ldap_location=""
 # Used by files/ldap-ssh-key.sh to decide which users get their SSH key
 # served. Must match the naming convention files/sssd.conf.mo's
 # ldap_access_filter and the SSO Manager API registration in index.sh both
-# use: <location>_access / <location>_host_<hostname>_access. Sudo access
+# use: <location>_access / <location>_host_<hostname>_access, plus the
+# cross-app app_super_admin group (super admins get SSH login on every host --
+# keep in sync with sssd.conf.mo's ldap_access_filter). Sudo access
 # (the _admin equivalent) is enforced entirely by sssd.conf.mo's
 # ldap_sudo_search_filter -- there's no separate array for it.
-ldap_access_groups=( "${ldap_location}_access" "${ldap_location}_host_$(hostname)_access" )
+ldap_access_groups=( "${ldap_location}_access" "${ldap_location}_host_$(hostname)_access" "app_super_admin" )
