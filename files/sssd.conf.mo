@@ -42,11 +42,14 @@ ldap_sudo_smart_refresh_interval = 300
 # follow-up, doesn't block SSH login/access-filter testing below.
 # ldap_sudo_search_filter = (|(memberOf=cn={{ldap_location}}_admin,ou=groups,{{ldap_base_dn}})(memberOf=cn={{ldap_location}}_host_{{current_host}}_admin,ou=groups,{{ldap_base_dn}}))
 
-# Access control: only allow users in <location>_access or
-# <location>_host_<hostname>_access.
+# Access control: only allow users in <location>_access,
+# <location>_host_<hostname>_access, or the cross-app app_super_admin group
+# (super admins get SSH login on every host, same as they get admin in the
+# SSO manager/proxy/jump-host web UIs -- see files/ldap-ssh-key.sh for the
+# matching AuthorizedKeysCommand-side check).
 access_provider = ldap
 ldap_access_order = filter
-ldap_access_filter = (|(memberof=cn={{ldap_location}}_access,ou=groups,{{ldap_base_dn}})(memberof=cn={{ldap_location}}_host_{{current_host}}_access,ou=groups,{{ldap_base_dn}}))
+ldap_access_filter = (|(memberof=cn={{ldap_location}}_access,ou=groups,{{ldap_base_dn}})(memberof=cn={{ldap_location}}_host_{{current_host}}_access,ou=groups,{{ldap_base_dn}})(memberof=cn=app_super_admin,ou=groups,{{ldap_base_dn}}))
 
 # Mapping
 ldap_user_search_base = ou=people,{{ldap_base_dn}}
