@@ -47,9 +47,31 @@ ldap_sudo_smart_refresh_interval = 300
 # (super admins get SSH login on every host, same as they get admin in the
 # SSO manager/proxy/jump-host web UIs -- see files/ldap-ssh-key.sh for the
 # matching AuthorizedKeysCommand-side check).
+#
+# The app_super_admin clause is kept even though the SSO now nests
+# app_super_admin into each resource's _admin group (and _admin into _access),
+# which already covers it transitively: the clause is what keeps super-admin
+# login working against a directory that predates that nesting, or one whose
+# server does not resolve nesting at all.
 access_provider = ldap
 ldap_access_order = filter
 ldap_access_filter = (|(memberof=cn={{ldap_location}}_access,ou=groups,{{ldap_base_dn}})(memberof=cn={{ldap_location}}_host_{{current_host}}_access,ou=groups,{{ldap_base_dn}})(memberof=cn=app_super_admin,ou=groups,{{ldap_base_dn}}))
+
+# Nested groups.
+#
+# The SSO Manager's bundled slapd carries the `nestgroup` overlay, which makes
+# (memberOf=) searches match through nested groups server-side -- so the
+# ldap_access_filter above is already transitive there, and a user who reaches
+# <location>_host_<hostname>_access via an intermediate group (a team/role
+# group, or app_super_admin nested into the resource's _admin group) is
+# admitted without listing them on every host group.
+#
+# This directive covers the other case: an external/stock OpenLDAP, where no
+# 2.6.x release ships nestgroup and the server returns only direct membership.
+# SSSD then walks the chain itself, up to this depth. Harmless when the server
+# already expands (the walk simply finds nothing further); the default of 2 is
+# raised to 5 so a role-of-roles arrangement still resolves.
+ldap_group_nesting_level = 5
 
 # Mapping
 ldap_user_search_base = ou=people,{{ldap_base_dn}}
