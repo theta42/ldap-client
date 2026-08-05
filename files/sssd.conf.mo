@@ -42,20 +42,19 @@ ldap_sudo_smart_refresh_interval = 300
 # follow-up, doesn't block SSH login/access-filter testing below.
 # ldap_sudo_search_filter = (|(memberOf=cn={{ldap_location}}_admin,ou=groups,{{ldap_base_dn}})(memberOf=cn={{ldap_location}}_host_{{current_host}}_admin,ou=groups,{{ldap_base_dn}}))
 
-# Access control: only allow users in <location>_access,
-# <location>_host_<hostname>_access, or the cross-app app_super_admin group
-# (super admins get SSH login on every host, same as they get admin in the
-# SSO manager/proxy/jump-host web UIs -- see files/ldap-ssh-key.sh for the
-# matching AuthorizedKeysCommand-side check).
+# Access control: only allow users in the site's all-hosts aggregate
+# (site_<location>_hosts_access), this host's own access group
+# (site_<location>_host_<hostname>_access), or god_admin (super admins get SSH
+# login on every host, same as they get admin in the SSO manager/proxy/jump-host
+# web UIs -- see files/ldap-ssh-key.sh for the matching AuthorizedKeysCommand-
+# side check).
 #
-# The app_super_admin clause is kept even though the SSO now nests
-# app_super_admin into each resource's _admin group (and _admin into _access),
-# which already covers it transitively: the clause is what keeps super-admin
-# login working against a directory that predates that nesting, or one whose
-# server does not resolve nesting at all.
+# The god_admin clause is what keeps super-admin login working against a
+# directory that does not resolve nesting server-side (the nestgroup overlay),
+# or where god_admin isn't (yet) nested into the host's groups.
 access_provider = ldap
 ldap_access_order = filter
-ldap_access_filter = (|(memberof=cn={{ldap_location}}_access,ou=groups,{{ldap_base_dn}})(memberof=cn={{ldap_location}}_host_{{current_host}}_access,ou=groups,{{ldap_base_dn}})(memberof=cn=app_super_admin,ou=groups,{{ldap_base_dn}}))
+ldap_access_filter = (|(memberof=cn=site_{{ldap_location}}_hosts_access,ou=groups,{{ldap_base_dn}})(memberof=cn=site_{{ldap_location}}_host_{{current_host}}_access,ou=groups,{{ldap_base_dn}})(memberof=cn=god_admin,ou=groups,{{ldap_base_dn}}))
 
 # Nested groups.
 #
