@@ -49,9 +49,15 @@ fi
 
 systemctl enable --now sssd-sudo.socket
 
-if [[ -v sso_token ]]; then
+# Only self-register when a real API token is provided. sso_token is optional
+# (ldap.vars ships it empty); `[[ -v ]]` is true even for an empty/declared var,
+# so an empty token used to POST /api/directory-admin/resources and get a
+# misleading "Invalid Credentials, login failed" (the SSO can't authenticate an
+# empty Bearer). The stack host is already seeded by the bootstrap, so an empty
+# token must skip, not fail.
+if [[ -n "${sso_token:-}" ]]; then
     echo "Registering host in Directory Graph via API..."
-    
+
     # Collect Host Information
     host_ip=$(hostname -I | awk '{print $1}')
     
