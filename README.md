@@ -8,11 +8,16 @@ This script automates the configuration of SSSD (System Security Services Daemon
 
 - LDAP authentication against a central directory
 - Group-based access control (only authorized users can log in)
-- Sudo privileges via LDAP groups
 - SSH public key retrieval from LDAP for key-based authentication
 - Automatic home directory creation for LDAP users
 - Optional automatic registration of the host into the SSO Manager Directory Graph API
 
+> **Note on sudo:** group-based *login* access is enforced by SSSD's
+> `ldap_access_filter`. Group-based *sudo* via LDAP groups is **not** enforced by
+> this client today -- SSSD's native LDAP sudo provider and the per-host
+> `sudoRole` scoping it depends on are both deferred (design-gap D5). A host
+> joined with this script honors only `/etc/sudoers`/files sudo rules, not LDAP
+> `_admin` groups. See *Sudo integration* below.
 ## Prerequisites
 
 - Ubuntu or Debian system with root access
@@ -188,19 +193,15 @@ ldap-client/
 
 ### Sudo integration
 
-SSSD is configured with an LDAP sudo provider that:
-- Searches for sudo rules in the LDAP directory
-- Filters rules based on group membership
-- Refreshes rules every 15 minutes (full) or 5 minutes (smart)
+Group-based **sudo** via LDAP groups is **not** configured by this client
+(design-gap D5). The native SSSD LDAP `sudo_provider` and the `sssd-sudo.socket`
+are intentionally not enabled: the directory does not scope `sudoRole` per-host,
+so enabling them would grant every account `sudoHost`/`sudoCommand` `ALL/ALL` --
+universal root (H12). A host joined with this script therefore honors only
+local `/etc/sudoers` (files) sudo rules, not LDAP `_admin` groups.
 
-**Caveat:** `ldap_sudo_search_filter` (the group-scoping half of this) is
-commented out in `files/sssd.conf.mo` — SSSD 2.6.3's ini validator rejects it
-as an unknown option on this version, so sudo rule filtering by
-`<location>_admin`/`<location>_host_<hostname>_admin` group membership isn't
-actually enforced yet (native LDAP `sudoRole` entries are the likely fix,
-tracked as separate follow-up work). `app_super_admin` is **not** extended
-to sudo for the same reason — only the login (`ldap_access_filter`) side is
-wired up so far.
+The commented-out `ldap_sudo_search_filter` block remains in
+`files/sssd.conf.mo` as a reference for when a scoped `sudoRole` mechanism lands.
 
 ### SSO Manager integration
 
