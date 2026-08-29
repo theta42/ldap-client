@@ -16,31 +16,34 @@ chpass_provider = ldap
 ldap_uri = ldaps://{{ldap_host}}
 ldap_search_base = {{ldap_base_dn}}
 ldap_tls_cacert = /etc/ssl/certs/ca-certificates.crt
-# A self-signed dev/test LDAP cert's CN/SAN is usually the site's public
-# hostname (e.g. localtest.me), not the internal docker-network name used in
-# ldap_uri above (e.g. sso-manager) -- so strict hostname verification fails
-# even though the CA itself is trusted (see ldap_tls_cacert above). Same
-# already-accepted tradeoff theta-env's own bootstrap.js makes for this exact
-# cert (LDAPTLS_REQCERT=never). A real deployment with a cert matching its
-# actual LDAP hostname wouldn't need this.
-ldap_tls_reqcert = never
+# TLS certificate verification for the LDAPS connection. "never" disables
+# hostname verification (acceptable only for loopback/self-signed dev, e.g. the
+# co-located stack host); "demand" enforces it. Set in ldap.vars so the operator
+# can match the deployment's cert posture — see C4/H12.
+ldap_tls_reqcert = {{ldap_tls_reqcert}}
 
 ldap_default_bind_dn = {{ldap_bind_dn}}
 ldap_default_authtok_type = password
 ldap_default_authtok = {{ldap_bind_password}}
 
 # Sudo settings
-sudo_provider = ldap
-ldap_sudo_search_base = {{ldap_base_dn}}
-ldap_sudo_full_refresh_interval = 900
-ldap_sudo_smart_refresh_interval = 300
+# Sudo via the native LDAP provider is intentionally NOT enabled (design-gap D5):
+# the directory does not scope sudoRole per-host, so enabling sudo_provider would
+# hand every account sudoHost/sudoCommand ALL/ALL = universal root (H12 landmine).
+# The sssd-sudo.socket is likewise not started in index.sh. A scoped sudoRole
+# mechanism is required before this can be safely wired up.
+# (All of the following were active pre-H12 and are preserved as comments.)
+# sudo_provider = ldap
+# ldap_sudo_search_base = {{ldap_base_dn}}
+# ldap_sudo_full_refresh_interval = 900
+# ldap_sudo_smart_refresh_interval = 300
 # NOTE: ldap_sudo_search_filter is rejected by SSSD 2.6.3's ini validator
 # ("not allowed in section domain/default") -- it isn't a real sssd-ldap(5)
 # option on this version, so it's commented out rather than silently no-op'd.
 # Sudo scoping to <location>_admin / <location>_host_<hostname>_admin needs a
 # different mechanism (native LDAP sudoRole entries, most likely) -- separate
 # follow-up, doesn't block SSH login/access-filter testing below.
-# ldap_sudo_search_filter = (|(memberOf=cn={{ldap_location}}_admin,ou=groups,{{ldap_base_dn}})(memberOf=cn={{ldap_location}}_host_{{current_host}}_admin,ou=groups,{{ldap_base_dn}}))
+# ldap_sudo_search_filter = (|(memberOf=cn={{ldap_location_slug}}_admin,ou=groups,{{ldap_base_dn}})(memberOf=cn={{ldap_location_slug}}_host_{{current_host_slug}}_admin,ou=groups,{{ldap_base_dn}}))
 
 # Access control: only allow users in the site's all-hosts aggregate
 # (site_<location>_hosts_access), this host's own access group
@@ -54,7 +57,9 @@ ldap_sudo_smart_refresh_interval = 300
 # or where god_admin isn't (yet) nested into the host's groups.
 access_provider = ldap
 ldap_access_order = filter
-ldap_access_filter = (|(memberof=cn=site_{{ldap_location}}_hosts_access,ou=groups,{{ldap_base_dn}})(memberof=cn=site_{{ldap_location}}_host_{{current_host}}_access,ou=groups,{{ldap_base_dn}})(memberof=cn=god_admin,ou=groups,{{ldap_base_dn}}))
+# NOTE: location/host names are slugified (contract G-5: lower |
+# [^a-z0-9]+ -> "-" | trim "-") to match the directory's actual group slugs.
+ldap_access_filter = (|(memberof=cn=site_{{ldap_location_slug}}_hosts_access,ou=groups,{{ldap_base_dn}})(memberof=cn=site_{{ldap_location_slug}}_host_{{current_host_slug}}_access,ou=groups,{{ldap_base_dn}})(memberof=cn=god_admin,ou=groups,{{ldap_base_dn}}))
 
 # Nested groups.
 #

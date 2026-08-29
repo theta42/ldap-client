@@ -4,7 +4,16 @@ export ldap_host="ldap.internal.example.com"
 export ldap_base_dn="dc=example,dc=com"
 
 export ldap_bind_dn="cn=ldapclient,ou=People,$ldap_base_dn"
+# NOTE: the bind password is written to a 0640 root:nogroup passfile read via
+# `ldapsearch -y`; it is NOT baked into the deployed scripts or passed on argv
+# (C4). Keep ldap.vars out of version control.
 export ldap_bind_password=""
+
+# TLS cert verification for LDAPS. "demand" (recommended for real deployments
+# with a CA-signed cert) enforces hostname verification; set "never" only for
+# loopback/self-signed dev setups. Also honored by files/ldap-ssh-key.sh. See
+# C4/H12.
+export ldap_tls_reqcert="demand"
 
 export sso_url="https://sso.example.com"
 export sso_token="" # This is the only optional variable
@@ -17,6 +26,8 @@ export ldap_location=""
 # use: site_<location>_hosts_access (all-hosts aggregate) /
 # site_<location>_host_<hostname>_access (this host), plus god_admin (super
 # admins get SSH login on every host -- keep in sync with sssd.conf.mo's
-# ldap_access_filter). Sudo access (the _admin equivalent) is enforced entirely
-# by sssd.conf.mo's ldap_sudo_search_filter -- there's no separate array for it.
+# ldap_access_filter). The location/host names are slugified (contract G-5) by
+# index.sh to match the directory's actual group names. Sudo access is not
+# currently wired up at the client (scoped sudoRole is a design-gap D5 -- H12);
+# the native sudo provider and sssd-sudo.socket are intentionally not enabled.
 ldap_access_groups=( "site_${ldap_location}_hosts_access" "site_${ldap_location}_host_$(hostname)_access" "god_admin" )
